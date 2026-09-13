@@ -2,6 +2,5 @@ node_modules/
 dist/
 tsconfig.tsbuildinfo
 
-# Sinh tự động bởi `bun run gen:portraits` (predev/prebuild) — xem
-# scripts/generate-portraits.ts + src/data/characters.ts. Không commit.
+# Generated portraits
 public/portraits/
