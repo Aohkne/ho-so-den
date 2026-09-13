@@ -1,6 +1,6 @@
-import type { ArchiveAudio } from "../audio/audio";
-import type { CaseFile } from "../../data/case-types";
-import type { GameState } from "./state";
+import type { ArchiveAudio } from "@/features/audio/audio";
+import type { CaseFile } from "@/data/case-types";
+import type { GameState } from "@/features/investigation/state";
 
 interface DrawnLink {
   a: string;
@@ -8,10 +8,7 @@ interface DrawnLink {
   insight: string | null;
 }
 
-/**
- * Bảng chứng cứ: ghim các tang vật đã thu và căng dây giữa hai thứ liên quan.
- * Cặp nằm trong danh sách `links` của vụ án sẽ cho ra một suy luận.
- */
+// Evidence board
 export class EvidenceBoard {
   private cardsEl: HTMLElement;
   private stringsEl: SVGSVGElement;

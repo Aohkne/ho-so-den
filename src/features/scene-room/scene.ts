@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { CaseFile } from "../../data/case-types";
+import type { CaseFile } from "@/data/case-types";
 import {
   makeCabinet,
   makeDesk,
@@ -10,9 +10,9 @@ import {
   type LabelStatus,
   type SearchProp,
   type EvidenceShapeKind,
-} from "./props";
+} from "@/features/scene-room/props";
 
-const CLICK_MAX_DRAG = 6; // px — nhấn rồi thả trong khoảng này tính là click, không phải kéo nhìn
+const CLICK_MAX_DRAG = 6; // Click threshold
 const CLICK_MAX_MS = 400;
 
 type Mode = "idle" | "browsing" | "reading" | "search";
@@ -27,7 +27,7 @@ const IDLE_SHOT: Shot = {
   target: new THREE.Vector3(0, 0.9, -1.2),
 };
 
-// Lệch trái và cao hơn đèn bàn: đứng thẳng trục đèn thì nó che mất tủ bên phải.
+// Offset from lamp
 const ENTERED_SHOT: Shot = {
   position: new THREE.Vector3(0.05, 1.95, 3.25),
   target: new THREE.Vector3(0.0, 1.05, -1.5),
@@ -120,7 +120,7 @@ export class ArchiveScene {
     this.motionEnabled = enabled;
   }
 
-  /** Về màn tiêu đề: camera lùi ra, trôi chậm quanh phòng. */
+  /** Go to title */
   showTitle() {
     this.mode = "idle";
     this.drawersById.forEach((d) => (d.openTarget = 0));
@@ -130,7 +130,7 @@ export class ArchiveScene {
     this.setGoal(IDLE_SHOT);
   }
 
-  /** Vào phòng chọn vụ án. */
+  /** Enter room */
   enterRoom() {
     this.mode = "browsing";
     this.drawersById.forEach((d) => (d.openTarget = 0));
@@ -140,7 +140,7 @@ export class ArchiveScene {
     this.setGoal(ENTERED_SHOT);
   }
 
-  /** Mở một vụ án: kéo ngăn kéo ra, đặt tập hồ sơ lên bàn, đưa camera vào. */
+  /** Open a case */
   openCase(id: string, title: string, subtitle: string, tag: string, portraitId?: string) {
     this.mode = "reading";
     this.drawersById.forEach((d, drawerId) => (d.openTarget = drawerId === id ? 0.42 : 0));
@@ -150,10 +150,7 @@ export class ArchiveScene {
     this.setGoal(this.readingShot);
   }
 
-  /**
-   * Chế độ khám xét: chỉ hiện + làm sáng đúng những vật giấu thuộc vụ án đang
-   * mở (`activePropIds`) — nếu hiện tất cả, các vụ sẽ lộ tang vật của nhau.
-   */
+  /** Enter search mode */
   enterSearch(activePropIds: string[]) {
     this.mode = "search";
     this.searchProps.forEach((p) => {
@@ -170,7 +167,7 @@ export class ArchiveScene {
     this.setGoal(this.readingShot);
   }
 
-  /** Đánh dấu đã tìm thấy — `shape`, nếu có, làm vật giấu "lộ" ra đúng hình dạng thật. */
+  /** Mark prop found */
   markPropFound(propId: string, shape?: EvidenceShapeKind) {
     const prop = this.searchProps.find((p) => p.id === propId);
     if (!prop) return;
@@ -185,10 +182,7 @@ export class ArchiveScene {
   private hideAllSearchProps() {
     this.searchProps.forEach((p) => {
       p.object.visible = false;
-      // reset() phải chạy ở đây: 4 vật này dùng lại giữa các vụ, nếu không
-      // trả về khối chung ban đầu thì hình "lộ ra" của vụ trước sẽ dính lại
-      // sang vụ sau (đã tự bắt được bug này — vòng nhẫn nhỏ của một vụ làm
-      // vùng bấm của vụ kế tiếp bị co lại, ngoài việc lộ sai hình từ đầu).
+      // Reset shared props
       p.reset();
     });
     this.hoveredProp = null;
@@ -297,9 +291,7 @@ export class ArchiveScene {
     if (this.mode === "browsing") this.updateHoverState();
     else if (this.mode === "search") this.updateSearchHoverState();
 
-    // Cây đèn bàn bấm được bất kể đang ở màn nào — kiểm tra sau cùng để
-    // không đè lên logic hover của ngăn kéo/vật giấu manh mối phía trên,
-    // chỉ đổi con trỏ chuột nếu đang thực sự trỏ vào chụp đèn.
+    // Lamp always clickable
     if (!this.dragging && this.pickLamp()) {
       this.renderer.domElement.style.cursor = "pointer";
     }
@@ -332,7 +324,7 @@ export class ArchiveScene {
     }
   };
 
-  /** true nếu con trỏ đang trỏ vào chụp đèn bàn — bấm được ở bất kỳ màn nào. */
+  /** Pointer over lamp */
   private pickLamp(): boolean {
     return this.pick([this.desk.lampMesh], "lampToggle") !== null;
   }
@@ -397,7 +389,7 @@ export class ArchiveScene {
         d.group.position.z = base + d.openCurrent * 0.55;
       });
 
-      // vật giấu manh mối nhấp nháy nhẹ khi đang khám xét
+      // Pulse hidden clues
       if (this.mode === "search" && this.motionEnabled) {
         const pulse = 0.55 + Math.sin(t * 3) * 0.25;
         this.searchProps.forEach((p) => {
@@ -406,8 +398,7 @@ export class ArchiveScene {
         });
       }
 
-      // vừa "lộ" đúng hình dạng thật thì bung nhẹ từ nhỏ lên cỡ thật, không
-      // đứng yên lớn ngay — cho cảm giác rõ ràng là vừa có gì đó vừa hiện ra
+      // Pop-in on reveal
       const REVEAL_MS = 260;
       this.searchProps.forEach((p) => {
         const revealedAt = p.object.userData.revealedAt as number | undefined;

@@ -1,6 +1,4 @@
-/**
- * Âm thanh bằng Web Audio thuần — không thư viện ngoài, mọi tiếng đều tổng hợp tại chỗ.
- */
+// Web Audio synth
 export class ArchiveAudio {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
@@ -37,28 +35,28 @@ export class ArchiveAudio {
     return this.enabled;
   }
 
-  /** Tiếng nhấp nhẹ: mở hồ sơ, lật trang. */
+  /** Soft click */
   blip() {
     this.tone({ type: "sine", from: 520, to: 340, duration: 0.18, gain: 0.25 });
   }
 
-  /** Tiếng thu được chứng cứ: hai nốt đi lên. */
+  /** Evidence found */
   found() {
     this.tone({ type: "triangle", from: 440, to: 660, duration: 0.14, gain: 0.22 });
     window.setTimeout(() => this.tone({ type: "triangle", from: 660, to: 880, duration: 0.16, gain: 0.18 }), 110);
   }
 
-  /** Tiếng đóng dấu: một cú "thịch" trầm. */
+  /** Stamp thud */
   stamp() {
     this.tone({ type: "square", from: 180, to: 60, duration: 0.22, gain: 0.3 });
   }
 
-  /** Tiếng kết luận sai: nốt trầm kéo dài. */
+  /** Wrong verdict */
   wrong() {
     this.tone({ type: "sawtooth", from: 220, to: 110, duration: 0.5, gain: 0.16 });
   }
 
-  /** Tiếng tách công tắc đèn: một cú click cơ khí rất ngắn. */
+  /** Lamp switch */
   switchClick() {
     this.tone({ type: "square", from: 950, to: 650, duration: 0.035, gain: 0.16 });
   }

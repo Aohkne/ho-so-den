@@ -1,9 +1,8 @@
 import * as THREE from "three";
-import { loadPortraitImage } from "../portraits/portrait-assets";
-import type { EvidenceShapeKind } from "../../data/case-types";
+import { loadPortraitImage } from "@/features/portraits/portrait-assets";
+import type { EvidenceShapeKind } from "@/data/case-types";
 
-// Bộ font có subset tiếng Việt (DM Mono/DM Sans/Instrument Serif không có).
-// Canvas chỉ dùng được font đã tải xong — xem gate document.fonts trong main.ts.
+// Vietnamese-subset fonts
 const MONO = '"IBM Plex Mono", monospace';
 const SERIF = '"Playfair Display", Georgia, serif';
 
@@ -17,7 +16,7 @@ const STATUS_STAMP: Record<LabelStatus, { text: string; color: string } | null> 
   sealed: { text: "NIÊM PHONG", color: "#934235" },
 };
 
-/** Nhãn dán trên ngăn kéo: số hiệu + tên vụ + con dấu trạng thái. */
+/** Drawer label texture */
 export function makeLabelTexture(
   title: string,
   subtitle: string,
@@ -66,12 +65,7 @@ export function makeLabelTexture(
   return texture;
 }
 
-/**
- * Bìa tập hồ sơ đặt trên bàn khi đang đọc một vụ.
- * `portraitId` (nếu có) trỏ tới một chân dung đã tiền-render trong
- * public/portraits/ — được nạp (và cache) qua `loadPortraitImage`, không vẽ
- * lại SVG mỗi lần mở hồ sơ.
- */
+/** Folder cover texture */
 export function makeFolderTexture(
   title: string,
   subtitle: string,
@@ -255,7 +249,7 @@ const CABINET_GREEN = 0x4a5a3f;
 const CABINET_GREEN_DARK = 0x3a4832;
 const BRASS = 0xc6ae7e;
 
-/** Băng niêm phong đỏ dán chéo ngăn kéo bị khóa. */
+/** Red seal tape */
 function makeSealTape(width: number, height: number): THREE.Group {
   const group = new THREE.Group();
   const mat = new THREE.MeshStandardMaterial({ color: 0x9c3b30, roughness: 0.7 });
@@ -268,7 +262,7 @@ function makeSealTape(width: number, height: number): THREE.Group {
   return group;
 }
 
-/** Một chồng ngăn kéo hồ sơ, mỗi ngăn tự trượt ra và mang nhãn riêng. */
+/** Drawer cabinet */
 export function makeCabinet(configs: DrawerConfig[]): { group: THREE.Group; drawers: DrawerHandle[] } {
   const group = new THREE.Group();
   const drawerHeight = 0.62;
@@ -333,19 +327,13 @@ export function makeCabinet(configs: DrawerConfig[]): { group: THREE.Group; draw
   return { group, drawers };
 }
 
-// Trước khi lục ra, vật giấu manh mối chỉ là một khối chung (giấy/hộp/chìa
-// khóa/giấy vò — xem 4 mesh trong makeDesk). Khi người chơi bấm vào, nó phải
-// "lộ" ra đúng hình dạng thật của tang vật — không chỉ đổi khối hình trơn,
-// mà có texture riêng để nhận ra ngay (cúc áo có lỗ chỉ, cuộn phim có vòng
-// tua + lỗ tua phim, ảnh có hình minh họa thật trên mặt, sổ tay có nhãn bìa).
-// `EvidenceShapeKind` định nghĩa ở data/case-types.ts vì đó là dữ liệu vụ án;
-// nơi này chỉ biết cách VẼ từng loại hình — xem SearchProp.reveal().
+// Reveal shapes
 export type { EvidenceShapeKind };
 
 interface EvidenceVisual {
   geometry: THREE.BufferGeometry;
   material: THREE.Material | THREE.Material[];
-  /** cộng thêm vào góc quay gốc của vật (để hình mới nằm đúng chiều, ví dụ nhẫn phải nằm úp) */
+  /** Extra rotation */
   extraRotationX?: number;
 }
 
@@ -371,7 +359,7 @@ function toTexture(canvas: HTMLCanvasElement): THREE.CanvasTexture {
   return tex;
 }
 
-/** Cúc áo: đĩa tròn kem với 4 lỗ chỉ — không chỉ là một đĩa trơn. */
+/** Button texture */
 function makeButtonTexture(): THREE.CanvasTexture {
   const size = 128;
   const { canvas, ctx } = canvas2d(size, size);
@@ -400,7 +388,7 @@ function makeButtonTexture(): THREE.CanvasTexture {
   return toTexture(canvas);
 }
 
-/** Ảnh chụp: khung polaroid quanh một cảnh minh họa thật (chân trời + 2 bóng người) — không phải mảng màu trơn. */
+/** Photo texture */
 function makePhotoTexture(): THREE.CanvasTexture {
   const w = 160,
     h = 200;
@@ -430,7 +418,7 @@ function makePhotoTexture(): THREE.CanvasTexture {
   return toTexture(canvas);
 }
 
-/** Giấy tờ/tài liệu: vài dòng chữ mờ, không phải mảng màu trơn. */
+/** Document texture */
 function makeDocumentTexture(): THREE.CanvasTexture {
   const w = 160,
     h = 200;
@@ -449,7 +437,7 @@ function makeDocumentTexture(): THREE.CanvasTexture {
   return toTexture(canvas);
 }
 
-/** Sổ tay/nhật ký: bìa da tối màu với ô nhãn — không phải hộp nâu trơn. */
+/** Book texture */
 function makeBookTexture(): THREE.CanvasTexture {
   const w = 140,
     h = 190;
@@ -466,7 +454,7 @@ function makeBookTexture(): THREE.CanvasTexture {
   return toTexture(canvas);
 }
 
-/** Mặt trên cuộn phim: các vòng tua đồng tâm quanh một trục — dáng cuộn phim thật. */
+/** Reel top texture */
 function makeReelTopTexture(): THREE.CanvasTexture {
   const size = 128;
   const { canvas, ctx } = canvas2d(size, size);
@@ -488,7 +476,7 @@ function makeReelTopTexture(): THREE.CanvasTexture {
   return toTexture(canvas);
 }
 
-/** Mặt bên cuộn phim: dải phim tối với lỗ tua sáng lặp lại quanh vòng. */
+/** Reel side texture */
 function makeReelSideTexture(): THREE.CanvasTexture {
   const w = 256,
     h = 32;
@@ -509,7 +497,7 @@ function makeReelSideTexture(): THREE.CanvasTexture {
   return tex;
 }
 
-/** Dựng hình + vật liệu thật cho một loại tang vật, thay cho khối hình trơn ban đầu. */
+/** Build evidence shape */
 function buildEvidenceVisual(kind: EvidenceShapeKind): EvidenceVisual {
   switch (kind) {
     case "button": {
@@ -524,7 +512,7 @@ function buildEvidenceVisual(kind: EvidenceShapeKind): EvidenceVisual {
         extraRotationX: Math.PI / 2,
       };
     case "loop":
-      // vòng kính lúp: cùng dáng nhẫn nhưng ánh kim loại/kính bạc, không phải vàng cưới
+      // Magnifying loop
       return {
         geometry: new THREE.TorusGeometry(0.042, 0.008, 12, 28),
         material: stdMat(0xb9c2c4, { metalness: 0.6, roughness: 0.15 }),
@@ -551,7 +539,7 @@ function buildEvidenceVisual(kind: EvidenceShapeKind): EvidenceVisual {
       return { geometry: new THREE.CylinderGeometry(0.06, 0.06, 0.045, 28), material: [side, top, top] };
     }
     default: {
-      // "paper"
+      // Paper default
       const top = texMat(makeDocumentTexture(), { roughness: 0.75 });
       const side = stdMat(0xd9cca0, { roughness: 0.85 });
       return { geometry: new THREE.BoxGeometry(0.22, 0.01, 0.16), material: [side, side, top, side, side, side] };
@@ -572,15 +560,9 @@ export interface SearchProp {
   object: THREE.Object3D;
   setFound: (found: boolean) => void;
   setHighlighted: (on: boolean) => void;
-  /** Đổi từ khối chung sang đúng hình dạng của tang vật, kèm một cú "bung ra". */
+  /** Reveal true shape */
   reveal: (kind: EvidenceShapeKind) => void;
-  /**
-   * Trả lại khối chung ban đầu (hình/màu/góc quay/scale) — PHẢI gọi mỗi khi
-   * đổi sang vụ án khác. 4 vật giấu này được dùng lại giữa các vụ (xem
-   * roomProp trong data/cases/*.ts); nếu không reset, hình dạng vụ trước
-   * "lộ" ra sẽ dính lại — vừa lộ sai hình ngay từ đầu vụ mới, vừa có thể
-   * làm vùng bấm bị co nhỏ lại nếu hình cũ (như nhẫn) nhỏ hơn khối gốc.
-   */
+  /** Reset to base shape */
   reset: () => void;
 }
 
@@ -589,7 +571,7 @@ export interface DeskProps {
   folderMesh: THREE.Mesh;
   folderAnchor: THREE.Vector3;
   searchProps: SearchProp[];
-  /** vật thể chụp đèn — bấm vào để bật/tắt, xem ArchiveScene.pickLamp() */
+  /** Lamp shade mesh */
   lampMesh: THREE.Object3D;
   setFolderVisible: (visible: boolean) => void;
   setFolderContent: (title: string, subtitle: string, tag: string, portraitId?: string) => void;
@@ -597,13 +579,11 @@ export interface DeskProps {
   isLampOn: () => boolean;
 }
 
-/** Vật nhỏ giấu manh mối: click được khi đang ở chế độ khám xét. */
+/** Hidden clue prop */
 function makeSearchProp(id: string, mesh: THREE.Mesh, baseColor: number): SearchProp {
   mesh.userData.propId = id;
 
-  // Giữ lại nguyên bản gốc (KHÔNG dispose) để reset() luôn trả về đúng chỗ
-  // này — 4 vật này dùng lại giữa các vụ, nếu không giữ bản gốc thì sau khi
-  // .dispose() một lần sẽ không có gì để quay lại nữa.
+  // Keep original for reset
   const originalGeometry = mesh.geometry;
   const originalMaterial = mesh.material;
   const originalRotation = mesh.rotation.clone();
@@ -676,7 +656,7 @@ export function makeDesk(): DeskProps {
   blotter.position.y = 0.83;
   group.add(blotter);
 
-  // đèn bàn
+  // Desk lamp
   const brassMat = () => new THREE.MeshStandardMaterial({ color: BRASS, metalness: 0.7, roughness: 0.3 });
   const lampBase = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.03, 24), brassMat());
   lampBase.position.set(0.9, 0.85, 0.32);
@@ -686,9 +666,7 @@ export function makeDesk(): DeskProps {
   lampPole.position.set(0.9, 1.07, 0.32);
   group.add(lampPole);
 
-  // Bấm vào chụp đèn để bật/tắt — xem userData.lampToggle, đọc bởi
-  // ArchiveScene.pickLamp() bất kể đang ở màn nào (không gắn theo `mode`
-  // như ngăn kéo/vật giấu manh mối).
+  // Click to toggle
   const lampShadeMat = new THREE.MeshStandardMaterial({
     color: 0x2f5a3a,
     side: THREE.DoubleSide,
@@ -714,7 +692,7 @@ export function makeDesk(): DeskProps {
     lampShadeMat.emissiveIntensity = on ? 0.35 : 0;
   };
 
-  // cốc
+  // Mug
   const mug = new THREE.Mesh(
     new THREE.CylinderGeometry(0.06, 0.06, 0.09, 16),
     new THREE.MeshStandardMaterial({ color: 0xe8e6d9, roughness: 0.6 }),
@@ -722,7 +700,7 @@ export function makeDesk(): DeskProps {
   mug.position.set(-0.85, 0.885, 0.28);
   group.add(mug);
 
-  // tập hồ sơ (ẩn tới khi mở một vụ)
+  // Case folder
   const folderTexture = makeFolderTexture("Hồ sơ", "PHÒNG LƯU TRỮ", "FILE NO. AL–000");
   const folderMat = new THREE.MeshStandardMaterial({ map: folderTexture, roughness: 0.8 });
   const folderMesh = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.02, 0.82), folderMat);
@@ -731,14 +709,9 @@ export function makeDesk(): DeskProps {
   folderMesh.visible = false;
   group.add(folderMesh);
 
-  // ——— vật giấu manh mối ———
+  // Hidden clues
 
-  // Cả hai phải nằm ngoài hình chiếu của mặt bàn, nếu không mặt bàn che mất
-  // khi camera nhìn từ trên xuống ở chế độ khám xét.
-  // Bốn chỗ giấu có thể dùng, tất cả đặt trong đúng khung nhìn của camera chế
-  // độ khám xét (xem SEARCH_SHOT trong scene.ts) và ẩn theo mặc định — scene.ts
-  // chỉ hiện + làm sáng đúng 2 vật thuộc vụ án đang mở (xem enterSearch()),
-  // nếu không mọi vụ sẽ cùng thấy tang vật của nhau, rất dễ gây nhầm lẫn.
+  // Outside desk projection; shown per-case in enterSearch()
   const paperColor = 0xd9cfae;
   const paper = new THREE.Mesh(
     new THREE.BoxGeometry(0.28, 0.014, 0.2),

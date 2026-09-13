@@ -1,10 +1,10 @@
-import { ArchiveAudio } from "../audio/audio";
-import type { ArchiveScene } from "../scene-room/scene";
-import type { LabelStatus } from "../scene-room/props";
-import { portraitUrl } from "../portraits/portrait-assets";
-import { cases, findCase, LAST_CASE_ID, type CaseFile, type Evidence } from "../../data/cases";
-import { GameState, MISTAKE_LIMIT } from "./state";
-import { EvidenceBoard } from "./board";
+import { ArchiveAudio } from "@/features/audio/audio";
+import type { ArchiveScene } from "@/features/scene-room/scene";
+import type { LabelStatus } from "@/features/scene-room/props";
+import { portraitUrl } from "@/features/portraits/portrait-assets";
+import { cases, findCase, LAST_CASE_ID, type CaseFile, type Evidence } from "@/data/cases";
+import { GameState, MISTAKE_LIMIT } from "@/features/investigation/state";
+import { EvidenceBoard } from "@/features/investigation/board";
 
 type Screen = "title" | "briefing" | "room" | "case" | "search" | "board" | "accuse" | "verdict" | "ending";
 type Tab = "brief" | "evidence" | "suspects" | "testimony";
@@ -147,7 +147,7 @@ export class GameFlow {
     this.setStatus("HỒ SƠ ĐEN ĐÃ MỞ · CHỜ NGƯỜI NHẬN VIỆC");
   }
 
-  // ——— điều phối màn hình ———
+  // Screen routing
 
   private show(screen: Screen) {
     this.screen = screen;
@@ -190,7 +190,7 @@ export class GameFlow {
     this.els.fragmentsCount.textContent = `${this.state.fragments.length}/6`;
   }
 
-  // ——— sự kiện ———
+  // Event bindings
 
   private bindEvents() {
     this.scene.setHandlers({
@@ -276,8 +276,7 @@ export class GameFlow {
     });
 
     document.addEventListener("keydown", (e) => {
-      // Dialog đang mở thì phím thuộc về nó (Escape đóng dialog), không được
-      // đụng tới màn phía sau — nếu không Escape sẽ đóng luôn cả hồ sơ.
+      // Dialog owns keys
       if (document.querySelector("dialog[open]")) return;
 
       if (this.screen === "case" && this.tab === "brief") {
@@ -300,7 +299,7 @@ export class GameFlow {
     this.setStatus("TRONG PHÒNG LƯU TRỮ · CHỌN MỘT VỤ ÁN");
   }
 
-  // ——— rê chuột lên ngăn kéo ———
+  // Drawer hover
 
   private handleHover(id: string | null) {
     this.hoveredCaseId = id;
@@ -328,7 +327,7 @@ export class GameFlow {
     this.els.objectPrompt.removeAttribute("hidden");
   }
 
-  // ——— mở hồ sơ ———
+  // Open case
 
   private openCase(id: string) {
     const c = findCase(id);
@@ -486,7 +485,7 @@ export class GameFlow {
     this.renderBrief(c);
   }
 
-  // ——— khám xét phòng ———
+  // Room search
 
   private startSearch() {
     const c = this.currentCase;
@@ -531,7 +530,7 @@ export class GameFlow {
       remaining > 0 ? `Còn ${remaining} tang vật nữa đâu đó trong phòng.` : "Đã lục hết những chỗ đáng lục.";
   }
 
-  // ——— luận tội ———
+  // Accusation
 
   private openAccusation() {
     const c = this.currentCase;
@@ -643,7 +642,7 @@ export class GameFlow {
     this.setStatus(correct === 3 ? `VỤ ÁN ${c.number} ĐÃ KHÉP LẠI` : "KẾT LUẬN BỊ TRẢ VỀ");
   }
 
-  // ——— sổ vụ án ———
+  // Case index
 
   private renderIndex() {
     this.els.indexList.innerHTML = "";

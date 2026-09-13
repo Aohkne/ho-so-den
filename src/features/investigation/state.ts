@@ -1,7 +1,7 @@
-import { cases, findCase, type CaseFile } from "../../data/cases";
+import { cases, findCase, type CaseFile } from "@/data/cases";
 
 const SAVE_KEY = "archive-save-v1";
-/** Số lần luận tội sai trong một vụ trước khi hồ sơ bị thu hồi tạm thời. */
+// Mistake limit
 export const MISTAKE_LIMIT = 3;
 
 export interface CaseProgress {
@@ -38,7 +38,7 @@ export class GameState {
     this.load();
   }
 
-  // ——— lưu / đọc ———
+  // Save / load
 
   hasSave(): boolean {
     return Object.keys(this.data.progress).length > 0;
@@ -51,7 +51,7 @@ export class GameState {
       const parsed = JSON.parse(raw) as SaveData;
       if (parsed?.version === 1 && parsed.progress) this.data = parsed;
     } catch {
-      // localStorage bị chặn hoặc dữ liệu hỏng — chơi tiếp với ván mới
+      // Corrupt or blocked
     }
   }
 
@@ -59,7 +59,7 @@ export class GameState {
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(this.data));
     } catch {
-      // hết dung lượng hoặc bị chặn — không chặn luồng chơi
+      // Storage failed
     }
   }
 
@@ -68,7 +68,7 @@ export class GameState {
     this.save();
   }
 
-  // ——— tiến trình từng vụ ———
+  // Case progress
 
   progressFor(caseId: string): CaseProgress {
     if (!this.data.progress[caseId]) {
@@ -117,7 +117,7 @@ export class GameState {
     return this.progressFor(caseId).linked.includes(this.linkKey(a, b));
   }
 
-  /** Đủ chứng cứ bắt buộc thì mới mở được màn luận tội. */
+  // Ready to accuse
   canAccuse(caseFile: CaseFile): boolean {
     const p = this.progressFor(caseFile.id);
     return caseFile.requiredEvidence.every((id) => p.found.includes(id));
@@ -128,7 +128,7 @@ export class GameState {
     return caseFile.requiredEvidence.filter((id) => !p.found.includes(id)).length;
   }
 
-  /** Hồ sơ bị thu hồi tạm thời sau quá nhiều lần luận tội sai. */
+  // Locked out
   isLockedOut(caseId: string): boolean {
     const p = this.progressFor(caseId);
     return !p.solved && p.mistakes >= MISTAKE_LIMIT;
@@ -156,7 +156,7 @@ export class GameState {
     this.save();
   }
 
-  // ——— tổng hợp ———
+  // Aggregates
 
   get fragments(): string[] {
     return this.data.fragments;
@@ -178,7 +178,7 @@ export class GameState {
     return RANKS.find((r) => this.data.totalMistakes <= r.maxMistakes)!.label;
   }
 
-  /** Vụ đang dở dang gần nhất, dùng cho nút TIẾP TỤC. */
+  // Resume target
   resumeCaseId(): string | null {
     const active = cases.find((c) => {
       const p = this.data.progress[c.id];

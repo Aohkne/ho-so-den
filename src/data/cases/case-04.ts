@@ -1,4 +1,4 @@
-import type { CaseFile } from "../case-types";
+import type { CaseFile } from "@/data/case-types";
 
 export const case04: CaseFile = {
   id: "case-04",

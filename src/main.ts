@@ -1,14 +1,10 @@
-import { cases } from "./data/cases";
-import { GameFlow } from "./features/investigation/flow";
-import { GameState } from "./features/investigation/state";
-import type { LabelStatus } from "./features/scene-room/props";
-import { ArchiveScene } from "./features/scene-room/scene";
+import { cases } from "@/data/cases";
+import { GameFlow } from "@/features/investigation/flow";
+import { GameState } from "@/features/investigation/state";
+import type { LabelStatus } from "@/features/scene-room/props";
+import { ArchiveScene } from "@/features/scene-room/scene";
 
-/**
- * Canvas 2D chỉ vẽ được bằng font đã tải xong, nếu không nó âm thầm rơi về font hệ thống.
- * Chuỗi mẫu có dấu là bắt buộc: Google Fonts chia font theo unicode-range, nên phải yêu cầu
- * đúng ký tự tiếng Việt thì subset `vietnamese` mới được tải.
- */
+// Preload fonts
 async function loadFonts() {
   if (!("fonts" in document)) return;
   const sample = "ẤỆỘỢỮỰăâđêôơư";
@@ -21,13 +17,13 @@ async function loadFonts() {
     ]);
     await document.fonts.ready;
   } catch {
-    // font không tải được — vẫn chạy tiếp với font dự phòng
+    // Fallback fonts
   }
 }
 
 async function boot() {
   const world = document.getElementById("world");
-  if (!world) throw new Error("Thiếu #world");
+  if (!world) throw new Error("Missing #world");
 
   await loadFonts();
 

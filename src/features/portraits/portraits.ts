@@ -1,10 +1,4 @@
-/**
- * Bộ sinh chân dung nhân vật kiểu ảnh hồ sơ cảnh sát, vẽ tay bằng SVG (string
- * thuần, không chạm DOM). Chỉ được `scripts/generate-portraits.ts` import để
- * tiền-render ra `public/portraits/*.svg` lúc build/dev — KHÔNG import module
- * này vào bất kỳ code nào chạy trong trình duyệt, để tránh vẽ lại mỗi lần tải
- * trang. Runtime dùng `features/portraits/portrait-assets.ts` để lấy URL.
- */
+// SVG portrait generator
 
 export interface PortraitLook {
   skin: string;
@@ -12,7 +6,7 @@ export interface PortraitLook {
   hairStyle: "bob" | "bun" | "short" | "thin" | "hidden";
   cloth: string;
   accent: string;
-  /** dáng mặt — khác nhau giúp phân biệt nhân vật nhanh hơn màu tóc */
+  /** Face shape */
   face?: "oval" | "long" | "square";
   hat?: "fedora" | "cap";
   mustache?: boolean;
@@ -87,7 +81,7 @@ function hatShape(look: PortraitLook): string {
     <ellipse cx="60" cy="46" rx="32" ry="6" fill="${band}"/>`;
 }
 
-/** Trả về chuỗi SVG hoàn chỉnh. `placard` là dòng chữ trên bảng số hiệu (bỏ trống thì ẩn). */
+/** Builds SVG string */
 export function portraitSVG(look: PortraitLook, opts: { placard?: string; size?: number } = {}): string {
   const skinDark = shade(look.skin, -26);
   const hairDark = shade(look.hair, -30);
