@@ -1,6 +1,10 @@
 node_modules/
 dist/
 tsconfig.tsbuildinfo
+.DS_Store
 
 # Generated portraits
 public/portraits/
+
+# Local demo recordings — not committed
+docs/videos/
