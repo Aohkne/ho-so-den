@@ -1,0 +1,23 @@
+{
+  "name": "ho-so-den",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "gen:portraits": "bun run scripts/generate-portraits.ts",
+    "predev": "bun run gen:portraits",
+    "dev": "vite",
+    "prebuild": "bun run gen:portraits",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vite": "^5.4.0",
+    "@types/three": "^0.169.0"
+  }
+}

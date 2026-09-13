@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#101713" />
+  <title>Hồ Sơ Đen — game trinh thám</title>
+  <meta name="description" content="Game trinh thám: mỗi ngăn kéo trong phòng lưu trữ là một vụ án chưa khép lại. Thu thập chứng cứ, nối manh mối, luận tội." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="/src/styles/style.css" />
+</head>
+<body>
+  <div id="world" aria-label="Kho hồ sơ ba chiều"></div>
+  <div class="atmosphere" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <header class="hud" id="hud" hidden>
+    <button class="wordmark" id="home" aria-label="Về phòng lưu trữ">
+      <span class="sigil">hđ</span>
+      <span>HỒ SƠ ĐEN<small>PHÒNG ÁN TỒN ĐỌNG</small></span>
+    </button>
+    <div class="hud-tools">
+      <span class="session"><i></i> <span id="hud-rank">THÁM TỬ TẬP SỰ</span></span>
+      <span class="session" id="hud-progress">ĐÃ KHÉP LẠI 0/1</span>
+      <button id="sound" aria-pressed="false" aria-label="Bật âm thanh">ÂM THANH <span>TẮT</span></button>
+      <button id="motion" aria-pressed="false" aria-label="Giảm chuyển động">CHUYỂN ĐỘNG <span>BẬT</span></button>
+      <button id="index-button" class="index-button">SỔ VỤ ÁN <span>&#9638;</span></button>
+    </div>
+  </header>
+
+  <main id="experience">
+    <!-- ——— MÀN TIÊU ĐỀ ——— -->
+    <section class="screen screen-title" id="screen-title">
+      <div class="eyebrow"><span class="tiny-cross">+</span> SỞ CẢNH SÁT · PHÒNG ÁN TỒN ĐỌNG</div>
+      <h1>Hồ Sơ <em>Đen</em></h1>
+      <p>Bảy ngăn kéo. Bảy vụ án chưa ai khép lại được.<br>Đèn trong phòng này chỉ tắt khi ông tìm ra sự thật.</p>
+      <div class="title-actions">
+        <button class="enter-button" id="btn-new">ĐIỀU TRA MỚI</button>
+        <button class="enter-button ghost" id="btn-continue" hidden>TIẾP TỤC</button>
+        <button class="plain-link" id="btn-guide">Hướng dẫn chơi</button>
+      </div>
+      <div class="intro-meta"><span>HỒ SƠ ĐEN</span><span>MẬT · CHỈ ĐỌC TẠI CHỖ</span></div>
+    </section>
+
+    <!-- ——— MÀN GIỚI THIỆU ——— -->
+    <section class="screen screen-briefing" id="screen-briefing" hidden>
+      <div class="id-card">
+        <div class="id-card-head">
+          <span class="eyebrow">THẺ ĐIỀU TRA VIÊN</span>
+          <span class="id-card-no">SỐ 4471</span>
+        </div>
+        <div class="id-card-body">
+          <div class="id-photo" id="id-photo"></div>
+          <div class="id-fields">
+            <span>HỌ TÊN</span><strong>Điều tra viên mới</strong>
+            <span>PHÂN CÔNG</span><strong>Phòng án tồn đọng, Hồ Sơ Đen</strong>
+            <span>CẤP BẬC</span><strong id="brief-rank">THÁM TỬ TẬP SỰ</strong>
+          </div>
+        </div>
+        <p class="id-note">Người tiền nhiệm của ông bỏ việc giữa chừng. Không ai nói vì sao. Hồ sơ ông ta đang xem dở vẫn nằm trong ngăn kéo cuối — ngăn bị dán niêm phong.</p>
+        <ol class="rules">
+          <li>Mở một ngăn kéo để nhận vụ án. Đọc hết hồ sơ, <strong>bấm vào từng tang vật</strong> để thu vào túi chứng cứ.</li>
+          <li>Vài tang vật không nằm trong hồ sơ. <strong>Khám xét phòng</strong> để tìm chúng.</li>
+          <li>Đủ chứng cứ thì <strong>luận tội</strong>: ai, bằng cách nào, vì lẽ gì. Sai ba lần, hồ sơ bị thu hồi.</li>
+        </ol>
+        <button class="enter-button" id="btn-accept">NHẬN NHIỆM VỤ</button>
+      </div>
+    </section>
+
+    <!-- ——— GỢI Ý KHI RÊ VÀO NGĂN KÉO ——— -->
+    <div id="object-prompt" class="object-prompt" hidden>
+      <span class="eyebrow" id="prompt-kicker">VỤ ÁN</span>
+      <h2 id="prompt-title">Một hồ sơ chưa khép lại.</h2>
+      <p id="prompt-copy">Bấm để mở.</p>
+      <button id="object-action" class="enter-button"><span id="action-label">MỞ HỒ SƠ</span></button>
+    </div>
+
+    <!-- ——— MÀN ĐỌC HỒ SƠ ——— -->
+    <section class="dossier" id="screen-case" hidden>
+      <article class="paper-page" id="case-page">
+        <nav class="case-tabs" id="case-tabs">
+          <button data-tab="brief" class="active">TÓM TẮT</button>
+          <button data-tab="evidence">CHỨNG CỨ <span id="tab-evidence-count">0/0</span></button>
+          <button data-tab="suspects">NGHI PHẠM</button>
+          <button data-tab="testimony">LỜI KHAI</button>
+        </nav>
+        <div class="paper-kicker" id="case-kicker"></div>
+        <h2 id="case-title"></h2>
+        <div id="case-body"></div>
+      </article>
+    </section>
+
+    <!-- ——— MÀN KHÁM XÉT ——— -->
+    <div class="search-hud" id="screen-search" hidden>
+      <span class="eyebrow">ĐANG KHÁM XÉT PHÒNG LƯU TRỮ</span>
+      <p id="search-hint">Những vật sáng lên là chỗ đáng lục. Bấm vào để xem xét.</p>
+      <button class="enter-button" id="btn-search-done">QUAY LẠI HỒ SƠ</button>
+    </div>
+
+    <!-- ——— BẢNG CHỨNG CỨ ——— -->
+    <section class="screen screen-board" id="screen-board" hidden>
+      <div class="board-head">
+        <span class="eyebrow">BẢNG CHỨNG CỨ</span>
+        <h2>Nối hai thứ liên quan với nhau.</h2>
+        <p id="board-hint">Bấm chọn hai tấm thẻ để căng một sợi dây giữa chúng.</p>
+      </div>
+      <div class="board-canvas" id="board-canvas">
+        <svg class="board-strings" id="board-strings" aria-hidden="true"></svg>
+        <div class="board-cards" id="board-cards"></div>
+      </div>
+      <div class="board-insights" id="board-insights"></div>
+      <button class="enter-button" id="btn-board-close">ĐÓNG BẢNG</button>
+    </section>
+
+    <!-- ——— MÀN LUẬN TỘI ——— -->
+    <section class="screen screen-accuse" id="screen-accuse" hidden>
+      <div class="accuse-panel">
+        <span class="eyebrow">KẾT LUẬN ĐIỀU TRA</span>
+        <h2>Ông kết luận thế nào?</h2>
+        <div class="accuse-slots">
+          <div class="accuse-slot"><span>AI</span><div id="slot-suspect" class="slot-options"></div></div>
+          <div class="accuse-slot"><span>BẰNG CÁCH NÀO</span><div id="slot-method" class="slot-options"></div></div>
+          <div class="accuse-slot"><span>VÌ LẼ GÌ</span><div id="slot-motive" class="slot-options"></div></div>
+        </div>
+        <p class="accuse-warning" id="accuse-warning"></p>
+        <div class="accuse-actions">
+          <button class="enter-button" id="btn-submit" disabled>ĐÓNG DẤU KẾT LUẬN</button>
+          <button class="plain-link" id="btn-accuse-cancel">Quay lại hồ sơ</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ——— MÀN PHÁN QUYẾT ——— -->
+    <section class="screen screen-verdict" id="screen-verdict" hidden>
+      <div class="verdict-panel">
+        <div class="verdict-stamp" id="verdict-stamp">HỒ SƠ KHÉP LẠI</div>
+        <h2 id="verdict-title"></h2>
+        <p id="verdict-copy"></p>
+        <div class="verdict-fragment" id="verdict-fragment" hidden>
+          <span>MẢNH MANH MỐI THU ĐƯỢC</span>
+          <strong id="verdict-fragment-code"></strong>
+        </div>
+        <button class="enter-button" id="btn-verdict-done">VỀ PHÒNG LƯU TRỮ</button>
+      </div>
+    </section>
+
+    <!-- ——— MÀN KẾT THÚC (sau khi phá vụ 07) ——— -->
+    <section class="screen screen-ending" id="screen-ending" hidden>
+      <div class="ending-panel">
+        <span class="eyebrow">HỒ SƠ ĐEN / KHÉP LẠI</span>
+        <h2>Sáu vụ án, một cái tên.</h2>
+        <p>Cormac Wade đã đúng. Cornelius Wren không phải một cổ đông giấu mặt — ông ta là mạng lưới nối liền tất cả: một câu lạc bộ, một sòng bạc, một nhà trọ, một chuyến tàu, một cuộn phim, và một cái ghế trong chính tòa án thành phố.</p>
+        <p>Ngăn kéo cuối cùng đã mở. Đèn trong phòng lưu trữ này, lần đầu tiên sau rất lâu, được tắt đúng lúc — không phải bởi một kẻ đang che giấu điều gì, mà bởi người đã đọc hết mọi hồ sơ.</p>
+        <p class="ending-signoff">— Hết. Cảm ơn ông đã ở lại đến trang cuối cùng.</p>
+        <button class="enter-button" id="btn-ending-restart">BẮT ĐẦU MỘT HỒ SƠ MỚI</button>
+      </div>
+    </section>
+
+    <!-- ——— THANH CÔNG CỤ KHI ĐANG ĐIỀU TRA ——— -->
+    <div class="case-tools" id="case-tools" hidden>
+      <button id="btn-close-case">&#8630; ĐÓNG HỒ SƠ</button>
+      <div class="pager" id="case-pager">
+        <button id="btn-prev" aria-label="Trang trước">&larr;</button>
+        <span id="page-count">01 / 01</span>
+        <button id="btn-next" aria-label="Trang sau">&rarr;</button>
+      </div>
+      <div class="case-actions">
+        <button id="btn-search">KHÁM XÉT PHÒNG</button>
+        <button id="btn-board">BẢNG CHỨNG CỨ</button>
+        <button id="btn-accuse" class="accent">LUẬN TỘI</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="status-bar">
+    <span id="status-text" role="status" aria-live="polite">ĐANG MỞ PHÒNG LƯU TRỮ&hellip;</span>
+    <span id="interaction-hint">BẤM ĐỂ MỞ · KÉO ĐỂ NHÌN QUANH</span>
+    <span class="coordinates">HỒ SƠ ĐEN <span>MẬT</span></span>
+  </footer>
+
+  <div class="loading" id="loading">
+    <span class="loading-mark">hđ</span>
+    <span class="eyebrow">ĐANG KIỂM TRA THẺ RA VÀO</span>
+    <div class="loading-track"><span></span></div>
+  </div>
+
+  <dialog id="index-dialog" aria-labelledby="index-title">
+    <button class="close-dialog" aria-label="Đóng sổ vụ án">&#10005;</button>
+    <span class="eyebrow">HỒ SƠ ĐEN / SỔ VỤ ÁN</span>
+    <h2 id="index-title">Lần theo chứng cứ.</h2>
+    <p>Chọn một vụ án để mở hồ sơ.</p>
+    <div id="index-list"></div>
+    <p class="fragments-line">Mảnh manh mối: <strong id="fragments-count">0/6</strong></p>
+  </dialog>
+
+  <dialog id="evidence-dialog" aria-labelledby="evidence-dialog-title">
+    <button class="close-dialog" aria-label="Đóng">&#10005;</button>
+    <span class="eyebrow" id="evidence-dialog-kicker">TANG VẬT</span>
+    <h2 id="evidence-dialog-title"></h2>
+    <p id="evidence-dialog-detail"></p>
+    <p class="evidence-added">&#10003; Đã thu vào túi chứng cứ.</p>
+  </dialog>
+
+  <dialog id="guide-dialog" aria-labelledby="guide-dialog-title" class="guide-dialog">
+    <button class="close-dialog" aria-label="Đóng hướng dẫn">&#10005;</button>
+    <span class="eyebrow">HỒ SƠ ĐEN / SỔ TAY ĐIỀU TRA VIÊN</span>
+    <h2 id="guide-dialog-title">Hướng dẫn chơi</h2>
+    <div class="guide-body">
+      <div class="guide-block">
+        <h3>Vòng điều tra</h3>
+        <p>Mở ngăn kéo → đọc hồ sơ → thu chứng cứ → khám xét phòng → nối manh mối trên bảng chứng cứ → luận tội.</p>
+      </div>
+      <div class="guide-block">
+        <h3>Chứng cứ</h3>
+        <p>Phần lớn tang vật nằm trong thẻ <strong>Chứng cứ</strong> của hồ sơ — bấm vào để thu thập. Một số khác không có trong hồ sơ: bấm <strong>Khám xét phòng</strong>, những vật đáng lục sẽ sáng lên.</p>
+      </div>
+      <div class="guide-block">
+        <h3>Bảng chứng cứ</h3>
+        <p>Chọn hai tấm thẻ tang vật để căng dây giữa chúng. Nếu chúng thật sự liên quan, dây chuyển đỏ và một dòng suy luận hiện ra — thường chính là mối nối dẫn tới hung thủ.</p>
+      </div>
+      <div class="guide-block">
+        <h3>Luận tội</h3>
+        <p>Chọn đủ ba ô: <strong>AI</strong> · <strong>BẰNG CÁCH NÀO</strong> · <strong>VÌ LẼ GÌ</strong>. Sai ba lần trong cùng một vụ, hồ sơ bị thu hồi tạm thời — đọc lại rồi mở lại, bộ đếm sẽ được xóa. Mỗi vụ khép lại đúng cho một mảnh manh mối; đủ sáu mảnh sẽ mở được ngăn kéo niêm phong cuối cùng.</p>
+      </div>
+      <div class="guide-block">
+        <h3>Cấp bậc</h3>
+        <p>Tính theo tổng số lần luận tội sai: 0 lần — Thám tử hạng nhất · 1 lần — Thám tử · 2 lần — Thám tử tập sự · từ 3 lần — Nhân viên lưu trữ. Tiến trình được lưu ngay trên máy của ông.</p>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
